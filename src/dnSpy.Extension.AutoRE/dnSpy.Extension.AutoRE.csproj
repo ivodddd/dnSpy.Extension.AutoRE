@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+
+    <AssemblyName>dnSpy.Extension.AutoRE.x</AssemblyName>
+    <RootNamespace>dnSpy.AutoRE</RootNamespace>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+
+    <Title>AutoRE</Title>
+    <Description>dnSpyEx extension: API-based method tags and automatic renaming of obfuscated wrappers</Description>
+    <Version>0.1.0</Version>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+
+    <!--
+      DnSpyDir must point to a directory that contains dnSpy.Contracts.DnSpy.dll, dnlib.dll, ...
+      It's the "bin" directory of a dnSpyEx installation (the directory that also contains
+      dnSpy.exe in its parent), or the output directory of a dnSpyEx build.
+    -->
+    <DnSpyDir Condition="'$(DnSpyDir)' == '' and '$(DNSPY_DIR)' != ''">$(DNSPY_DIR)</DnSpyDir>
+    <DnSpyDir Condition="'$(DnSpyDir)' == ''">$(MSBuildThisFileDirectory)..\..\dnSpy</DnSpyDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="$(DnSpyDir)\dnSpy.Contracts.*.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="$(DnSpyDir)\dnlib.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="$(DnSpyDir)\System.ComponentModel.Composition.dll">
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Copies the extension to <dnSpy>/bin/Extensions/dnSpy.Extension.AutoRE. Set
+       -p:DeployToDnSpy=false to disable it. -->
+  <Target Name="DeployToDnSpy" AfterTargets="Build"
+          Condition="Exists('$(DnSpyDir)') and '$(DeployToDnSpy)' != 'false'">
+    <Copy SourceFiles="$(TargetPath)"
+          DestinationFolder="$(DnSpyDir)\Extensions\dnSpy.Extension.AutoRE"
+          ContinueOnError="WarnAndContinue" />
+  </Target>
+
+</Project>

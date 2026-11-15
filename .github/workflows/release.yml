@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+env:
+  DNSPY_VERSION: v6.6.0
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Download dnSpyEx
+        shell: bash
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/dnspy.zip" \
+            "https://github.com/dnSpyEx/dnSpy/releases/download/${DNSPY_VERSION}/dnSpy-net.zip"
+          mkdir -p "$RUNNER_TEMP/dnspy"
+          7z x "$RUNNER_TEMP/dnspy.zip" -o"$RUNNER_TEMP/dnspy" -y > /dev/null
+
+      - name: Build extension
+        shell: bash
+        run: |
+          dotnet build src/dnSpy.Extension.AutoRE -c Release \
+            -p:DnSpyDir="$RUNNER_TEMP/dnspy/bin" \
+            -p:DeployToDnSpy=false
+
+      - name: Attach DLL to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: src/dnSpy.Extension.AutoRE/bin/Release/net10.0-windows/dnSpy.Extension.AutoRE.x.dll
+          fail_on_unmatched_files: true
+          generate_release_notes: true
